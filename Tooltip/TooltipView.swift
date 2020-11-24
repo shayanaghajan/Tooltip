@@ -39,7 +39,7 @@ class TooltipView: UIView {
         var preferences = EasyTipView.Preferences()
         preferences.drawing.font = UIFont(name: "HelveticaNeue-Medium", size: 12)!
         preferences.drawing.foregroundColor = .white
-        let color = rgbToHue(r:255 ,g:150, b:0)
+        let color = rgbToHue(r:255/255 ,g:150/255, b:0/255)
         preferences.drawing.backgroundColor = UIColor(hue: color.h, saturation: color.s, brightness: color.b, alpha:1)
         preferences.drawing.arrowPosition = EasyTipView.ArrowPosition.top
         
