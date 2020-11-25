@@ -9,7 +9,6 @@
 /* Begin PBXBuildFile section */
 		B917DD22E9C97F9DB03124DD /* Pods_Tooltip.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 853324647CABB5396A390BBE /* Pods_Tooltip.framework */; };
 		E4077249256A4F480064A287 /* TooltipView.swift in Sources */ = {isa = PBXBuildFile; fileRef = E4077248256A4F480064A287 /* TooltipView.swift */; };
-		E407724C256A53880064A287 /* TooltipModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = E407724B256A53880064A287 /* TooltipModel.swift */; };
 		E407724F256A54B60064A287 /* Tooltip.swift in Sources */ = {isa = PBXBuildFile; fileRef = E407724E256A54B60064A287 /* Tooltip.swift */; };
 		E4223944256A43560018BDA2 /* Tooltip.h in Headers */ = {isa = PBXBuildFile; fileRef = E4223942256A43560018BDA2 /* Tooltip.h */; settings = {ATTRIBUTES = (Public, ); }; };
 /* End PBXBuildFile section */
@@ -19,7 +18,6 @@
 		853324647CABB5396A390BBE /* Pods_Tooltip.framework */ = {isa = PBXFileReference; explicitFileType = wrapper.framework; includeInIndex = 0; path = Pods_Tooltip.framework; sourceTree = BUILT_PRODUCTS_DIR; };
 		ADAC02EE6180FE493A938921 /* Pods-Tooltip.debug.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-Tooltip.debug.xcconfig"; path = "Target Support Files/Pods-Tooltip/Pods-Tooltip.debug.xcconfig"; sourceTree = "<group>"; };
 		E4077248256A4F480064A287 /* TooltipView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TooltipView.swift; sourceTree = "<group>"; };
-		E407724B256A53880064A287 /* TooltipModel.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TooltipModel.swift; sourceTree = "<group>"; };
 		E407724E256A54B60064A287 /* Tooltip.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Tooltip.swift; sourceTree = "<group>"; };
 		E422393F256A43560018BDA2 /* Tooltip.framework */ = {isa = PBXFileReference; explicitFileType = wrapper.framework; includeInIndex = 0; path = Tooltip.framework; sourceTree = BUILT_PRODUCTS_DIR; };
 		E4223942256A43560018BDA2 /* Tooltip.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = Tooltip.h; sourceTree = "<group>"; };
@@ -79,7 +77,6 @@
 				E4223942256A43560018BDA2 /* Tooltip.h */,
 				E4223943256A43560018BDA2 /* Info.plist */,
 				E4077248256A4F480064A287 /* TooltipView.swift */,
-				E407724B256A53880064A287 /* TooltipModel.swift */,
 				E407724E256A54B60064A287 /* Tooltip.swift */,
 			);
 			path = Tooltip;
@@ -191,7 +188,6 @@
 			buildActionMask = 2147483647;
 			files = (
 				E4077249256A4F480064A287 /* TooltipView.swift in Sources */,
-				E407724C256A53880064A287 /* TooltipModel.swift in Sources */,
 				E407724F256A54B60064A287 /* Tooltip.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
