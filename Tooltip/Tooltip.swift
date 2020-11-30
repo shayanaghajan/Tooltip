@@ -7,9 +7,17 @@
 
 import UIKit
 
+public protocol TooltipDelegate {
+    func tipDismissed(_ withId: String)
+}
+
 open class Tooltip {
         
     private var tooltipView : TooltipView?
+    
+    private var id : String?
+    
+    var delegate: TooltipDelegate?
     
     /// The main window of the application which tooltip views are placed on
     private let appWindow: UIWindow? = {
@@ -32,19 +40,34 @@ open class Tooltip {
                      hasFinish: Bool = false,
                      topArrow: Bool,
                      view: UIView,
-                     viewRect: CGRect? = nil) {
+                     viewRect: CGRect? = nil,
+                     delegate: TooltipDelegate? = nil) {
         
-        tooltipView = TooltipView.init(id: id, text: text, hasNext: hasNext, hasSkip: hasSkip, hasFinish: hasFinish, topArrow: topArrow, view: view, viewRect: viewRect, delegate: self)
+        self.id = id
+        
+        self.delegate = delegate
+        
+        tooltipView = TooltipView.init(id: id, text: text, topArrow: topArrow, view: view, viewRect: viewRect, delegate: self)
         tooltipView?.backgroundColor = UIColor(red: 0.0,
                                                green: 0.0,
                                                blue: 0.0,
                                                alpha: 0.2)
+        
+//        let tap = UITapGestureRecognizer(target: self, action: #selector(handleTap))
+//        tap.delegate = self
+//        addGestureRecognizer(tap)
+        
         appWindow?.addSubview(tooltipView!)
+    }
+    
+    @objc func handleTap() {
+        delegate?.tipDismissed(id ?? "")
     }
 }
 
 extension Tooltip: TooltipViewDelegate {
     func tooltipViewIsDismissed() {
+        delegate?.tipDismissed(id ?? "")
         tooltipView?.removeFromSuperview()
     }
 }
