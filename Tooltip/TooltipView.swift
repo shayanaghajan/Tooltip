@@ -8,16 +8,27 @@
 import UIKit
 import EasyTipView
 
-enum tipViewButtonType {
-    case next
-    case skip
-    case finish
+enum tipViewButtonType : String {
+    case next = "Next"
+    case skip = "Skip"
+    case finish = "Finish"
+    
+    func selector() -> Selector {
+        switch self {
+        case .skip:
+            return #selector(TooltipView.skipButtonTapped)
+        case .next:
+            return #selector(TooltipView.nextButtonTapped)
+        case .finish:
+            return #selector(TooltipView.dismissTip)
+        }
+    }
 }
 
 protocol TooltipViewDelegate {
-    func tooltipViewIsDismissed(forId Id: String)
-    func nextButtonTapped(forId Id: String)
-    func skipButtonTapped(forId Id: String)
+    func tooltipViewIsDismissed()
+    func nextButtonTapped()
+    func skipButtonTapped()
 }
 
 class TooltipView: UIView {
@@ -33,31 +44,29 @@ class TooltipView: UIView {
     private var tipView = EasyTipView(text: "")
         
     fileprivate lazy var textSize: CGSize = {
-        
         [unowned self] in
-            #if swift(>=4.2)
-            var attributes = [NSAttributedString.Key.font : UIFont(name: "HelveticaNeue-Medium", size: 12)!]
-            #else
-            var attributes = [NSAttributedStringKey.font : UIFont(name: "HelveticaNeue-Medium", size: 12)!]
-            #endif
-            
-            var textSize = text.boundingRect(with: CGSize(width: 200, height: CGFloat.greatestFiniteMagnitude), options: NSStringDrawingOptions.usesLineFragmentOrigin, attributes: attributes, context: nil).size
-            
-            textSize.width = ceil(textSize.width)
-            textSize.height = ceil(textSize.height)
-            
-            if textSize.width < 10 {
-                textSize.width = 10
-            }
-            
-            return textSize
-        }()
+        #if swift(>=4.2)
+        var attributes = [NSAttributedString.Key.font : UIFont(name: "HelveticaNeue-Medium", size: 12)!]
+        #else
+        var attributes = [NSAttributedStringKey.font : UIFont(name: "HelveticaNeue-Medium", size: 12)!]
+        #endif
+        
+        var textSize = text.boundingRect(with: CGSize(width: 200, height: CGFloat.greatestFiniteMagnitude), options: NSStringDrawingOptions.usesLineFragmentOrigin, attributes: attributes, context: nil).size
+        
+        textSize.width = ceil(textSize.width)
+        textSize.height = ceil(textSize.height)
+        
+        if textSize.width < 10 {
+            textSize.width = 10
+        }
+        
+        return textSize
+    }()
     
     init(id: String,
          text: String,
          firstButton: tipViewButtonType? = nil,
          secondButton: tipViewButtonType? = nil,
-         hasFinish: Bool = false,
          topArrow: Bool,
          view: UIView,
          viewRect: CGRect? = nil,
@@ -222,28 +231,15 @@ class TooltipView: UIView {
         
         if let firstButton = firstButton {
             let button = UIButton(frame: CGRect(x: viewWidth - 108, y: textSize.height + 8, width: 52, height: 25))
-            switch firstButton {
-            case .skip:
-                drawButtons(button, title: "Skip")
-                button.addTarget(self, action: #selector(skipButtonTapped), for: .touchUpInside)
-            default:
-                break
-            }
+            drawButtons(button, title: firstButton.rawValue)
+            button.addTarget(self, action: #selector(skipButtonTapped), for: .touchUpInside)
             view.addSubview(button)
         }
         
         if let secondButton = secondButton {
             let button = UIButton(frame: CGRect(x: viewWidth - 52, y: textSize.height + 8, width: 52, height: 25))
-            switch secondButton {
-            case .finish:
-                drawButtons(button, title: "Finish")
-                button.addTarget(self, action: #selector(dismissTip), for: .touchUpInside)
-            case .next:
-                drawButtons(button, title: "Next")
-                button.addTarget(self, action: #selector(nextButtonTapped), for: .touchUpInside)
-            default:
-                break
-            }
+            drawButtons(button, title: secondButton.rawValue)
+            button.addTarget(self, action: secondButton.selector(), for: .touchUpInside)
             view.addSubview(button)
         }
         
@@ -269,26 +265,26 @@ class TooltipView: UIView {
         button.layer.cornerRadius = 4.0
     }
     
-    @objc private func dismissTip() {
+    @objc fileprivate func dismissTip() {
         tipView.dismiss()
-        tooltipDelegate?.tooltipViewIsDismissed(forId: id)
+        tooltipDelegate?.tooltipViewIsDismissed()
     }
     
-    @objc func nextButtonTapped() {
+    @objc fileprivate func nextButtonTapped() {
         self.layer.mask = nil
         tipView.dismiss()
-        tooltipDelegate?.nextButtonTapped(forId: id)
+        tooltipDelegate?.nextButtonTapped()
     }
     
-    @objc func skipButtonTapped() {
+    @objc fileprivate func skipButtonTapped() {
         tipView.dismiss()
-        tooltipDelegate?.skipButtonTapped(forId: id)
+        tooltipDelegate?.skipButtonTapped()
     }
 }
 
 extension TooltipView: EasyTipViewDelegate {
     func easyTipViewDidDismiss(_ tipView: EasyTipView) {
-        tooltipDelegate?.tooltipViewIsDismissed(forId: id)
+        tooltipDelegate?.tooltipViewIsDismissed()
     }
 }
 

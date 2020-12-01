@@ -17,7 +17,18 @@ open class Tooltip {
     
     private var id : String?
     
-    var delegate: TooltipDelegate?
+    private var delegate: TooltipDelegate?
+    
+    private var maximumNumberOfTips = 0
+    
+    private var currentTipIndex = 0
+    
+    private var tips = [TooltipModel]() {
+        didSet {
+            maximumNumberOfTips = tips.count
+            showTip()
+        }
+    }
     
     /// The main window of the application which tooltip views are placed on
     private let appWindow: UIWindow? = {
@@ -33,41 +44,72 @@ open class Tooltip {
     public init() {
     }
     
-    public func show(id: String,
-                     text: String,
-                     hasNext: Bool = false,
-                     hasSkip: Bool = false,
-                     hasFinish: Bool = false,
-                     topArrow: Bool,
-                     view: UIView,
-                     viewRect: CGRect? = nil,
-                     delegate: TooltipDelegate? = nil) {
+    public func show(_ tips: [TooltipModel]) {
         
-        self.id = id
+        self.tips = tips
         
-        self.delegate = delegate
-        
-        tooltipView = TooltipView.init(id: id, text: text, topArrow: topArrow, view: view, viewRect: viewRect, delegate: self)
         tooltipView?.backgroundColor = UIColor(red: 0.0,
                                                green: 0.0,
                                                blue: 0.0,
                                                alpha: 0.2)
         
-//        let tap = UITapGestureRecognizer(target: self, action: #selector(handleTap))
-//        tap.delegate = self
-//        addGestureRecognizer(tap)
-        
         appWindow?.addSubview(tooltipView!)
     }
     
-    @objc func handleTap() {
-        delegate?.tipDismissed(id ?? "")
+    private func showTip() {
+        
+        let tip = tips[currentTipIndex]
+        
+        self.id = tip.id
+        
+        self.delegate = tip.delegate
+        
+        var firstButton: tipViewButtonType? {
+            if tip.hasSkip {
+                return .skip
+            } else {
+                return nil
+            }
+        }
+        
+        var secondButton: tipViewButtonType? {
+            if tip.hasNext {
+                return .next
+            } else if tip.hasFinish {
+                return .finish
+            } else {
+                return nil
+            }
+        }
+        
+        
+        tooltipView = TooltipView.init(id: tip.id,
+                                       text: tip.text,
+                                       firstButton: firstButton,
+                                       secondButton: secondButton,
+                                       topArrow: tip.topArrow,
+                                       view: tip.view,
+                                       viewRect: tip.viewRect,
+                                       delegate: self)
+    }
+    
+    private func showNextTip() {
+        currentTipIndex += 1
+        showTip()
     }
 }
 
 extension Tooltip: TooltipViewDelegate {
     func tooltipViewIsDismissed() {
         delegate?.tipDismissed(id ?? "")
+        tooltipView?.removeFromSuperview()
+    }
+    
+    func nextButtonTapped() {
+        showNextTip()
+    }
+    
+    func skipButtonTapped() {
         tooltipView?.removeFromSuperview()
     }
 }
