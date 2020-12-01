@@ -9,6 +9,12 @@ import UIKit
 
 public protocol TooltipDelegate {
     func tipDismissed(_ withId: String)
+    func skipOtherTips()
+}
+
+//Make Skip tips to be an optional function
+extension TooltipDelegate {
+    func skipOtherTips() {}
 }
 
 open class Tooltip {
@@ -110,14 +116,18 @@ open class Tooltip {
 extension Tooltip: TooltipViewDelegate {
     func tooltipViewIsDismissed() {
         delegate?.tipDismissed(id ?? "")
-        tooltipView?.removeFromSuperview()
+        if currentTipIndex == maximumNumberOfTips - 1 {
+            tooltipView?.removeFromSuperview()
+        }
     }
     
     func nextButtonTapped() {
+        delegate?.tipDismissed(id ?? "")
         showNextTip()
     }
     
     func skipButtonTapped() {
+        delegate?.skipOtherTips()
         tooltipView?.removeFromSuperview()
     }
 }

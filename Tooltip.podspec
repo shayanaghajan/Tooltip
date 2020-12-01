@@ -9,7 +9,7 @@ Pod::Spec.new do |spec|
   spec.license      = "MIT"
   spec.author       = "Shayan Aghajan"
   spec.platform     = :ios, "11.0"
-  spec.source       = { :git => "https://github.com/shayanaghajan/Tooltip.git", :tag => "1.0.1" }
+  spec.source       = { :git => "https://github.com/shayanaghajan/Tooltip.git", :tag => "spec.version" }
   spec.source_files  = "Tooltip"
   spec.dependency    "EasyTipView", "~> 2.0.4"
   spec.swift_version = "5" 

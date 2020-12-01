@@ -117,6 +117,8 @@ class TooltipView: UIView {
         
         tipView = EasyTipView(contentView: drawCustomizedBubble(), preferences: preferences, delegate: self)
         tipView.show(forView: view)
+        
+        tipView.gestureRecognizers?.forEach(tipView.removeGestureRecognizer)
     }
     
     private func maskView() {
