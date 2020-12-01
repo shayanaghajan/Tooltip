@@ -15,6 +15,8 @@ open class Tooltip {
         
     private var tooltipView : TooltipView?
     
+    private var previousView: TooltipView?
+    
     private var id : String?
     
     private var delegate: TooltipDelegate?
@@ -45,13 +47,7 @@ open class Tooltip {
     }
     
     public func show(_ tips: [TooltipModel]) {
-        
         self.tips = tips
-        
-        tooltipView?.backgroundColor = UIColor(red: 0.0,
-                                               green: 0.0,
-                                               blue: 0.0,
-                                               alpha: 0.2)
     }
     
     private func showTip() {
@@ -89,12 +85,25 @@ open class Tooltip {
                                        viewRect: tip.viewRect,
                                        delegate: self)
         
+        tooltipView?.backgroundColor = UIColor(red: 0.0,
+                                               green: 0.0,
+                                               blue: 0.0,
+                                               alpha: 0.2)
+
         appWindow?.addSubview(tooltipView!)
+        
     }
     
     private func showNextTip() {
+        
         currentTipIndex += 1
+        
+        previousView = tooltipView
+        
         showTip()
+        
+        previousView?.removeFromSuperview()
+        previousView = nil
     }
 }
 

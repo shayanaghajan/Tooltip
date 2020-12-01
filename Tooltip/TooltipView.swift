@@ -284,7 +284,7 @@ class TooltipView: UIView {
 
 extension TooltipView: EasyTipViewDelegate {
     func easyTipViewDidDismiss(_ tipView: EasyTipView) {
-        tooltipDelegate?.tooltipViewIsDismissed()
+//        tooltipDelegate?.tooltipViewIsDismissed()
     }
 }
 
