@@ -88,7 +88,8 @@ class TooltipView: UIView {
         fatalError("init(coder:) has not been implemented")
     }
     
-    public override func draw(_ rect: CGRect) {
+    
+    override func draw(_ rect: CGRect) {
         // Drawing code
         maskView()
         showTooltip()
@@ -108,7 +109,7 @@ class TooltipView: UIView {
             preferences.drawing.arrowPosition = EasyTipView.ArrowPosition.bottom
         }
         
-        guard firstButton == nil && secondButton == nil else {
+        guard firstButton != nil || secondButton != nil else {
             tipView = EasyTipView(contentView: drawSimpleBubble(), preferences: preferences, delegate: self)
             tipView.show(forView: view)
             return
@@ -213,6 +214,11 @@ class TooltipView: UIView {
     private func drawCustomizedBubble() -> UIView {
         
         var viewWidth: CGFloat = 0.0
+        if textSize.width < 108 + 16 {
+            viewWidth  = 108 + 16
+        } else {
+            viewWidth = textSize.width
+        }
         
         let view = UIView(frame: CGRect(x: 0, y: 0, width: viewWidth, height: textSize.height + 25 + 8))
         
@@ -222,12 +228,6 @@ class TooltipView: UIView {
         textLabel.textColor = .white
         textLabel.text = self.text
         view.addSubview(textLabel)
-        
-        if textSize.width < 108 + 16 {
-            viewWidth  = 108 + 16
-        } else {
-            viewWidth = textSize.width
-        }
         
         if let firstButton = firstButton {
             let button = UIButton(frame: CGRect(x: viewWidth - 108, y: textSize.height + 8, width: 52, height: 25))

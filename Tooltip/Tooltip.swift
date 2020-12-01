@@ -52,8 +52,6 @@ open class Tooltip {
                                                green: 0.0,
                                                blue: 0.0,
                                                alpha: 0.2)
-        
-        appWindow?.addSubview(tooltipView!)
     }
     
     private func showTip() {
@@ -82,7 +80,6 @@ open class Tooltip {
             }
         }
         
-        
         tooltipView = TooltipView.init(id: tip.id,
                                        text: tip.text,
                                        firstButton: firstButton,
@@ -91,6 +88,8 @@ open class Tooltip {
                                        view: tip.view,
                                        viewRect: tip.viewRect,
                                        delegate: self)
+        
+        appWindow?.addSubview(tooltipView!)
     }
     
     private func showNextTip() {

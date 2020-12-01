@@ -7,7 +7,7 @@
 
 import UIKit
 
-public struct TooltipModel {
+public class TooltipModel {
     var id: String
     var text: String
     var hasNext: Bool
@@ -18,7 +18,7 @@ public struct TooltipModel {
     var viewRect: CGRect?
     var delegate: TooltipDelegate?
     
-    init(id: String,
+    public init(id: String,
          text: String,
          hasNext: Bool = false,
          hasSkip: Bool = false,
