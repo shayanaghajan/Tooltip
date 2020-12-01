@@ -30,6 +30,8 @@ class TooltipView: UIView {
     private var view: UIView = UIView()
     private var tipView = EasyTipView(text: "")
     
+    var maskedView: CAShapeLayer?
+    
     fileprivate lazy var textSize: CGSize = {
         
         [unowned self] in
@@ -97,6 +99,12 @@ class TooltipView: UIView {
             preferences.drawing.arrowPosition = EasyTipView.ArrowPosition.bottom
         }
         
+        guard firstButton == nil && secondButton == nil else {
+            tipView = EasyTipView(contentView: drawSimpleBubble(), preferences: preferences, delegate: self)
+            tipView.show(forView: view)
+            return
+        }
+        
         tipView = EasyTipView(contentView: drawCustomizedBubble(), preferences: preferences, delegate: self)
         tipView.show(forView: view)
     }
@@ -127,6 +135,8 @@ class TooltipView: UIView {
         mask.path = mutablePath
         mask.cornerRadius = 10
         mask.fillRule = CAShapeLayerFillRule.evenOdd
+        
+        maskedView = mask
 
         // Add the mask to the view
         view.layer.mask = mask
@@ -197,11 +207,14 @@ class TooltipView: UIView {
         
         var viewWidth: CGFloat = 0.0
         
+        let view = UIView(frame: CGRect(x: 0, y: 0, width: viewWidth, height: textSize.height + 25 + 8))
+        
         let textLabel = UILabel(frame: CGRect(x: 0, y: 0, width: textSize.width, height: textSize.height))
         textLabel.font = UIFont(name: "HelveticaNeue-Medium", size: 12)!
         textLabel.numberOfLines = 0
         textLabel.textColor = .white
         textLabel.text = self.text
+        view.addSubview(textLabel)
         
         if textSize.width < 108 + 16 {
             viewWidth  = 108 + 16
@@ -209,24 +222,38 @@ class TooltipView: UIView {
             viewWidth = textSize.width
         }
         
+        if let firstButton = firstButton {
+            let button = UIButton(frame: CGRect(x: viewWidth - 108, y: textSize.height + 8, width: 52, height: 25))
+            switch firstButton {
+            case .skip:
+                drawButtons(button, title: "Skip")
+                button.addTarget(self, action: #selector(skipButtonTapped), for: .touchUpInside)
+            default:
+                break
+            }
+            view.addSubview(button)
+        }
         
-        let firstButton = UIButton(frame: CGRect(x: viewWidth - 108, y: textSize.height + 8, width: 52, height: 25))
-        drawButtons(firstButton)
-        firstButton.setTitle("First", for: .normal)
+        if let secondButton = secondButton {
+            let button = UIButton(frame: CGRect(x: viewWidth - 52, y: textSize.height + 8, width: 52, height: 25))
+            switch secondButton {
+            case .finish:
+                drawButtons(button, title: "Finish")
+                button.addTarget(self, action: #selector(finishButtonTapped), for: .touchUpInside)
+            case .next:
+                drawButtons(button, title: "Next")
+                button.addTarget(self, action: #selector(nextButtonTapped), for: .touchUpInside)
+            default:
+                break
+            }
+            view.addSubview(button)
+        }
         
-        let SecondButton = UIButton(frame: CGRect(x: viewWidth - 52, y: textSize.height + 8, width: 52, height: 25))
-        drawButtons(SecondButton)
-        SecondButton.setTitle("Second", for: .normal)
-        
-        let view = UIView(frame: CGRect(x: 0, y: 0, width: viewWidth, height: textSize.height + 25 + 8))
-        view.addSubview(textLabel)
-        view.addSubview(firstButton)
-        view.addSubview(SecondButton)
         
         return view
     }
     
-    private func drawButtons(_ button: UIButton) {
+    private func drawButtons(_ button: UIButton, title: String) {
         
         button.backgroundColor = .white
         button.setTitleColor(UIColor(red: 105/255,
@@ -234,6 +261,7 @@ class TooltipView: UIView {
                                      blue: 105/255,
                                      alpha: 1.0), for: .normal)
         button.titleLabel?.font = UIFont(name: "HelveticaNeue-Medium", size: 12)
+        button.setTitle(title, for: .normal)
         
         button.layer.shadowColor = UIColor(red: 0, green: 0, blue: 0, alpha: 0.25).cgColor
         button.layer.shadowOffset = CGSize(width: 0.0, height: 2.0)
@@ -246,6 +274,18 @@ class TooltipView: UIView {
     @objc private func dismissTip() {
         tipView.dismiss()
         tooltipDelegate?.tooltipViewIsDismissed()
+    }
+    
+    @objc func nextButtonTapped() {
+//        view
+    }
+    
+    @objc func skipButtonTapped() {
+        
+    }
+    
+    @objc func finishButtonTapped() {
+        
     }
 }
 
