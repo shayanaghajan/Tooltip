@@ -15,7 +15,9 @@ enum tipViewButtonType {
 }
 
 protocol TooltipViewDelegate {
-    func tooltipViewIsDismissed()
+    func tooltipViewIsDismissed(forId Id: String)
+    func nextButtonTapped(forId Id: String)
+    func skipButtonTapped(forId Id: String)
 }
 
 class TooltipView: UIView {
@@ -29,9 +31,7 @@ class TooltipView: UIView {
     private var viewRect: CGRect?
     private var view: UIView = UIView()
     private var tipView = EasyTipView(text: "")
-    
-    var maskedView: CAShapeLayer?
-    
+        
     fileprivate lazy var textSize: CGSize = {
         
         [unowned self] in
@@ -136,8 +136,6 @@ class TooltipView: UIView {
         mask.cornerRadius = 10
         mask.fillRule = CAShapeLayerFillRule.evenOdd
         
-        maskedView = mask
-
         // Add the mask to the view
         view.layer.mask = mask
     }
@@ -239,7 +237,7 @@ class TooltipView: UIView {
             switch secondButton {
             case .finish:
                 drawButtons(button, title: "Finish")
-                button.addTarget(self, action: #selector(finishButtonTapped), for: .touchUpInside)
+                button.addTarget(self, action: #selector(dismissTip), for: .touchUpInside)
             case .next:
                 drawButtons(button, title: "Next")
                 button.addTarget(self, action: #selector(nextButtonTapped), for: .touchUpInside)
@@ -273,25 +271,24 @@ class TooltipView: UIView {
     
     @objc private func dismissTip() {
         tipView.dismiss()
-        tooltipDelegate?.tooltipViewIsDismissed()
+        tooltipDelegate?.tooltipViewIsDismissed(forId: id)
     }
     
     @objc func nextButtonTapped() {
-//        view
+        self.layer.mask = nil
+        tipView.dismiss()
+        tooltipDelegate?.nextButtonTapped(forId: id)
     }
     
     @objc func skipButtonTapped() {
-        
-    }
-    
-    @objc func finishButtonTapped() {
-        
+        tipView.dismiss()
+        tooltipDelegate?.skipButtonTapped(forId: id)
     }
 }
 
 extension TooltipView: EasyTipViewDelegate {
     func easyTipViewDidDismiss(_ tipView: EasyTipView) {
-        tooltipDelegate?.tooltipViewIsDismissed()
+        tooltipDelegate?.tooltipViewIsDismissed(forId: id)
     }
 }
 
