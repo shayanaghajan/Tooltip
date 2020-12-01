@@ -91,6 +91,10 @@ open class Tooltip {
                                        viewRect: tip.viewRect,
                                        delegate: self)
         
+        let tap = UITapGestureRecognizer(target: self, action: #selector(dismissTipView))
+        tooltipView?.addGestureRecognizer(tap)
+        
+        
         tooltipView?.backgroundColor = UIColor(red: 0.0,
                                                green: 0.0,
                                                blue: 0.0,
@@ -110,6 +114,10 @@ open class Tooltip {
         
         previousView?.removeFromSuperview()
         previousView = nil
+    }
+    
+    @objc func dismissTipView() {
+        tooltipViewIsDismissed()
     }
 }
 
