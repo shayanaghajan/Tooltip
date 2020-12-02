@@ -2,7 +2,7 @@
 Pod::Spec.new do |spec|
 
   spec.name         = "Tooltip"
-  spec.version      = "1.0.1"
+  spec.version      = "1.0.2"
   spec.summary      = "Tooltip is a customized version of EasyTipView"
   spec.description  = "This is a customized tooltip which used in Rivers.im app"
   spec.homepage     = "https://github.com/shayanaghajan/Tooltip.git"
