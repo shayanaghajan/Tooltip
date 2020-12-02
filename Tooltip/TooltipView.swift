@@ -8,14 +8,27 @@
 import UIKit
 import EasyTipView
 
-enum tipViewButtonType {
-    case next
-    case skip
-    case finish
+enum tipViewButtonType : String {
+    case next = "Next"
+    case skip = "Skip"
+    case finish = "Finish"
+    
+    func selector() -> Selector {
+        switch self {
+        case .skip:
+            return #selector(TooltipView.skipButtonTapped)
+        case .next:
+            return #selector(TooltipView.nextButtonTapped)
+        case .finish:
+            return #selector(TooltipView.dismissTip)
+        }
+    }
 }
 
 protocol TooltipViewDelegate {
     func tooltipViewIsDismissed()
+    func nextButtonTapped()
+    func skipButtonTapped()
 }
 
 class TooltipView: UIView {
@@ -27,38 +40,40 @@ class TooltipView: UIView {
     private var secondButton: tipViewButtonType? = nil
     private var topArrow: Bool = false
     private var viewRect: CGRect?
-    private var view: UIView = UIView()
-    private var tipView = EasyTipView(text: "")
+    private var view: UIView?
     
-    fileprivate lazy var textSize: CGSize = {
+    private var barButton: UIBarItem?
+    
+    private var tipView = EasyTipView(text: "")
         
+    fileprivate lazy var textSize: CGSize = {
         [unowned self] in
-            #if swift(>=4.2)
-            var attributes = [NSAttributedString.Key.font : UIFont(name: "HelveticaNeue-Medium", size: 12)!]
-            #else
-            var attributes = [NSAttributedStringKey.font : UIFont(name: "HelveticaNeue-Medium", size: 12)!]
-            #endif
-            
-            var textSize = text.boundingRect(with: CGSize(width: 200, height: CGFloat.greatestFiniteMagnitude), options: NSStringDrawingOptions.usesLineFragmentOrigin, attributes: attributes, context: nil).size
-            
-            textSize.width = ceil(textSize.width)
-            textSize.height = ceil(textSize.height)
-            
-            if textSize.width < 10 {
-                textSize.width = 10
-            }
-            
-            return textSize
-        }()
+        #if swift(>=4.2)
+        var attributes = [NSAttributedString.Key.font : UIFont(name: "HelveticaNeue-Medium", size: 12)!]
+        #else
+        var attributes = [NSAttributedStringKey.font : UIFont(name: "HelveticaNeue-Medium", size: 12)!]
+        #endif
+        
+        var textSize = text.boundingRect(with: CGSize(width: 200, height: CGFloat.greatestFiniteMagnitude), options: NSStringDrawingOptions.usesLineFragmentOrigin, attributes: attributes, context: nil).size
+        
+        textSize.width = ceil(textSize.width)
+        textSize.height = ceil(textSize.height)
+        
+        if textSize.width < 10 {
+            textSize.width = 10
+        }
+        
+        return textSize
+    }()
     
     init(id: String,
          text: String,
          firstButton: tipViewButtonType? = nil,
          secondButton: tipViewButtonType? = nil,
-         hasFinish: Bool = false,
          topArrow: Bool,
-         view: UIView,
+         view: UIView? = nil,
          viewRect: CGRect? = nil,
+         barButton: UIBarItem? = nil,
          delegate: TooltipViewDelegate?) {
         
         self.id = id
@@ -68,6 +83,7 @@ class TooltipView: UIView {
         self.topArrow = topArrow
         self.view = view
         self.viewRect = viewRect
+        self.barButton = barButton
         self.tooltipDelegate = delegate
         
         super.init(frame: UIScreen.main.bounds)
@@ -77,10 +93,15 @@ class TooltipView: UIView {
         fatalError("init(coder:) has not been implemented")
     }
     
-    public override func draw(_ rect: CGRect) {
+    
+    override func draw(_ rect: CGRect) {
         // Drawing code
         maskView()
         showTooltip()
+    }
+    
+    func removeTipView() {
+        tipView.dismiss()
     }
 
     private func showTooltip() {
@@ -97,16 +118,54 @@ class TooltipView: UIView {
             preferences.drawing.arrowPosition = EasyTipView.ArrowPosition.bottom
         }
         
-        tipView = EasyTipView(contentView: drawCustomizedBubble(), preferences: preferences, delegate: self)
-        tipView.show(forView: view)
+        guard firstButton != nil || secondButton != nil else {
+            
+            showEasyTip(drawSimpleBubble(), preferences)
+            
+            return
+        }
+        
+        showEasyTip(drawCustomizedBubble(), preferences)
+     
+    }
+    
+    private func showEasyTip(_ view: UIView,_ preferences: EasyTipView.Preferences) {
+        tipView = EasyTipView(contentView: view, preferences: preferences, delegate: self)
+        
+        if let item = barButton {
+            tipView.show(forItem: item)
+        } else {
+            tipView.show(forView: self.view ?? UIView())
+        }
+        
+        tipView.gestureRecognizers?.forEach(tipView.removeGestureRecognizer)
     }
     
     private func maskView() {
-        guard viewRect != nil else {
-            setMask(with: view.frame, in: self)
+        guard viewRect == nil else {
+            setMask(with: viewRect!, in: self)
             return
         }
-        setMask(with: viewRect!, in: self)
+        
+        if let barButton = barButton {
+            let view = getViewOfBarItem(barButton)
+            let viewPosition = view.superview?.convert(view.frame.origin, to: nil)
+            let viewRect = CGRect(x: viewPosition?.x ?? 0.0, y: viewPosition?.y ?? 0.0, width: view.frame.width, height: view.frame.height)
+            setMask(with: viewRect, in: self)
+        } else {
+            if let view = view {
+                let viewPosition = view.superview?.convert(view.frame.origin, to: nil)
+                let viewRect = CGRect(x: viewPosition?.x ?? 0.0, y: viewPosition?.y ?? 0.0, width: view.frame.width, height: view.frame.height)
+                setMask(with: viewRect, in: self)
+            }
+        }
+    }
+    
+    private func getViewOfBarItem(_ item: UIBarItem) -> UIView {
+        if let item = item as? UIBarButtonItem, let customView = item.customView {
+            return customView
+        }
+        return item.value(forKey: "view") as? UIView ?? UIView()
     }
     
     private func setMask(with hole: CGRect, in view: UIView) {
@@ -127,7 +186,7 @@ class TooltipView: UIView {
         mask.path = mutablePath
         mask.cornerRadius = 10
         mask.fillRule = CAShapeLayerFillRule.evenOdd
-
+        
         // Add the mask to the view
         view.layer.mask = mask
     }
@@ -196,37 +255,40 @@ class TooltipView: UIView {
     private func drawCustomizedBubble() -> UIView {
         
         var viewWidth: CGFloat = 0.0
-        
-        let textLabel = UILabel(frame: CGRect(x: 0, y: 0, width: textSize.width, height: textSize.height))
-        textLabel.font = UIFont(name: "HelveticaNeue-Medium", size: 12)!
-        textLabel.numberOfLines = 0
-        textLabel.textColor = .white
-        textLabel.text = self.text
-        
         if textSize.width < 108 + 16 {
             viewWidth  = 108 + 16
         } else {
             viewWidth = textSize.width
         }
         
-        
-        let firstButton = UIButton(frame: CGRect(x: viewWidth - 108, y: textSize.height + 8, width: 52, height: 25))
-        drawButtons(firstButton)
-        firstButton.setTitle("First", for: .normal)
-        
-        let SecondButton = UIButton(frame: CGRect(x: viewWidth - 52, y: textSize.height + 8, width: 52, height: 25))
-        drawButtons(SecondButton)
-        SecondButton.setTitle("Second", for: .normal)
-        
         let view = UIView(frame: CGRect(x: 0, y: 0, width: viewWidth, height: textSize.height + 25 + 8))
+        
+        let textLabel = UILabel(frame: CGRect(x: 0, y: 0, width: textSize.width, height: textSize.height))
+        textLabel.font = UIFont(name: "HelveticaNeue-Medium", size: 12)!
+        textLabel.numberOfLines = 0
+        textLabel.textColor = .white
+        textLabel.text = self.text
         view.addSubview(textLabel)
-        view.addSubview(firstButton)
-        view.addSubview(SecondButton)
+        
+        if let firstButton = firstButton {
+            let button = UIButton(frame: CGRect(x: viewWidth - 108, y: textSize.height + 8, width: 52, height: 25))
+            drawButtons(button, title: firstButton.rawValue)
+            button.addTarget(self, action: #selector(skipButtonTapped), for: .touchUpInside)
+            view.addSubview(button)
+        }
+        
+        if let secondButton = secondButton {
+            let button = UIButton(frame: CGRect(x: viewWidth - 52, y: textSize.height + 8, width: 52, height: 25))
+            drawButtons(button, title: secondButton.rawValue)
+            button.addTarget(self, action: secondButton.selector(), for: .touchUpInside)
+            view.addSubview(button)
+        }
+        
         
         return view
     }
     
-    private func drawButtons(_ button: UIButton) {
+    private func drawButtons(_ button: UIButton, title: String) {
         
         button.backgroundColor = .white
         button.setTitleColor(UIColor(red: 105/255,
@@ -234,6 +296,7 @@ class TooltipView: UIView {
                                      blue: 105/255,
                                      alpha: 1.0), for: .normal)
         button.titleLabel?.font = UIFont(name: "HelveticaNeue-Medium", size: 12)
+        button.setTitle(title, for: .normal)
         
         button.layer.shadowColor = UIColor(red: 0, green: 0, blue: 0, alpha: 0.25).cgColor
         button.layer.shadowOffset = CGSize(width: 0.0, height: 2.0)
@@ -243,9 +306,20 @@ class TooltipView: UIView {
         button.layer.cornerRadius = 4.0
     }
     
-    @objc private func dismissTip() {
+    @objc fileprivate func dismissTip() {
         tipView.dismiss()
         tooltipDelegate?.tooltipViewIsDismissed()
+    }
+    
+    @objc fileprivate func nextButtonTapped() {
+        self.layer.mask = nil
+        tipView.dismiss()
+        tooltipDelegate?.nextButtonTapped()
+    }
+    
+    @objc fileprivate func skipButtonTapped() {
+        tipView.dismiss()
+        tooltipDelegate?.skipButtonTapped()
     }
 }
 
