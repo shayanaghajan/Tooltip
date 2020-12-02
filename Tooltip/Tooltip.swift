@@ -89,6 +89,7 @@ open class Tooltip {
                                        topArrow: tip.topArrow,
                                        view: tip.view,
                                        viewRect: tip.viewRect,
+                                       barButton: tip.barButton,
                                        delegate: self)
         
         let tap = UITapGestureRecognizer(target: self, action: #selector(dismissTipView))
@@ -117,6 +118,7 @@ open class Tooltip {
     }
     
     @objc func dismissTipView() {
+        tooltipView?.removeTipView()
         tooltipViewIsDismissed()
     }
 }

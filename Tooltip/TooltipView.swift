@@ -40,7 +40,10 @@ class TooltipView: UIView {
     private var secondButton: tipViewButtonType? = nil
     private var topArrow: Bool = false
     private var viewRect: CGRect?
-    private var view: UIView = UIView()
+    private var view: UIView?
+    
+    private var barButton: UIBarItem?
+    
     private var tipView = EasyTipView(text: "")
         
     fileprivate lazy var textSize: CGSize = {
@@ -68,8 +71,9 @@ class TooltipView: UIView {
          firstButton: tipViewButtonType? = nil,
          secondButton: tipViewButtonType? = nil,
          topArrow: Bool,
-         view: UIView,
+         view: UIView? = nil,
          viewRect: CGRect? = nil,
+         barButton: UIBarItem? = nil,
          delegate: TooltipViewDelegate?) {
         
         self.id = id
@@ -79,6 +83,7 @@ class TooltipView: UIView {
         self.topArrow = topArrow
         self.view = view
         self.viewRect = viewRect
+        self.barButton = barButton
         self.tooltipDelegate = delegate
         
         super.init(frame: UIScreen.main.bounds)
@@ -93,6 +98,10 @@ class TooltipView: UIView {
         // Drawing code
         maskView()
         showTooltip()
+    }
+    
+    func removeTipView() {
+        tipView.dismiss()
     }
 
     private func showTooltip() {
@@ -110,23 +119,53 @@ class TooltipView: UIView {
         }
         
         guard firstButton != nil || secondButton != nil else {
-            tipView = EasyTipView(contentView: drawSimpleBubble(), preferences: preferences, delegate: self)
-            tipView.show(forView: view)
+            
+            showEasyTip(drawSimpleBubble(), preferences)
+            
             return
         }
         
-        tipView = EasyTipView(contentView: drawCustomizedBubble(), preferences: preferences, delegate: self)
-        tipView.show(forView: view)
+        showEasyTip(drawCustomizedBubble(), preferences)
+     
+    }
+    
+    private func showEasyTip(_ view: UIView,_ preferences: EasyTipView.Preferences) {
+        tipView = EasyTipView(contentView: view, preferences: preferences, delegate: self)
+        
+        if let item = barButton {
+            tipView.show(forItem: item)
+        } else {
+            tipView.show(forView: self.view ?? UIView())
+        }
         
         tipView.gestureRecognizers?.forEach(tipView.removeGestureRecognizer)
     }
     
     private func maskView() {
-        guard viewRect != nil else {
-            setMask(with: view.frame, in: self)
+        guard viewRect == nil else {
+            setMask(with: viewRect!, in: self)
             return
         }
-        setMask(with: viewRect!, in: self)
+        
+        if let barButton = barButton {
+            let view = getViewOfBarItem(barButton)
+            let viewPosition = view.superview?.convert(view.frame.origin, to: nil)
+            let viewRect = CGRect(x: viewPosition?.x ?? 0.0, y: viewPosition?.y ?? 0.0, width: view.frame.width, height: view.frame.height)
+            setMask(with: viewRect, in: self)
+        } else {
+            if let view = view {
+                let viewPosition = view.superview?.convert(view.frame.origin, to: nil)
+                let viewRect = CGRect(x: viewPosition?.x ?? 0.0, y: viewPosition?.y ?? 0.0, width: view.frame.width, height: view.frame.height)
+                setMask(with: viewRect, in: self)
+            }
+        }
+    }
+    
+    private func getViewOfBarItem(_ item: UIBarItem) -> UIView {
+        if let item = item as? UIBarButtonItem, let customView = item.customView {
+            return customView
+        }
+        return item.value(forKey: "view") as? UIView ?? UIView()
     }
     
     private func setMask(with hole: CGRect, in view: UIView) {
@@ -286,7 +325,7 @@ class TooltipView: UIView {
 
 extension TooltipView: EasyTipViewDelegate {
     func easyTipViewDidDismiss(_ tipView: EasyTipView) {
-//        tooltipDelegate?.tooltipViewIsDismissed()
+        tooltipDelegate?.tooltipViewIsDismissed()
     }
 }
 

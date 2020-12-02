@@ -8,14 +8,15 @@
 import UIKit
 
 public class TooltipModel {
-    var id: String
+    public var id: String
     var text: String
     var hasNext: Bool
     var hasSkip: Bool
     var hasFinish: Bool
     var topArrow: Bool
-    var view: UIView
+    var view: UIView?
     var viewRect: CGRect?
+    var barButton: UIBarItem?
     var delegate: TooltipDelegate?
     
     public init(id: String,
@@ -23,9 +24,10 @@ public class TooltipModel {
          hasNext: Bool = false,
          hasSkip: Bool = false,
          hasFinish: Bool = false,
-         topArrow: Bool,
-         view: UIView,
+         topArrow: Bool = true,
+         view: UIView? = nil,
          viewRect: CGRect? = nil,
+         barButton: UIBarItem? = nil,
          delegate: TooltipDelegate? = nil) {
         
         self.id = id
@@ -36,6 +38,7 @@ public class TooltipModel {
         self.topArrow = topArrow
         self.view = view
         self.viewRect = viewRect
+        self.barButton = barButton
         self.delegate = delegate
         
     }
